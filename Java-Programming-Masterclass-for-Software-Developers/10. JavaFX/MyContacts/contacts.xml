@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contacts>
+<contact>
+	<first_name>Jan</first_name>
+	<last_name>Smerecki</last_name>
+	<phone_number>numer</phone_number>
+	<notes>haha</notes>
+</contact>
+<contact>
+	<first_name>Jano</first_name>
+	<last_name>Jansen</last_name>
+	<phone_number>Janesenesn</phone_number>
+	<notes>Janowski</notes>
+</contact>
+<contact>
+	<first_name>JANSEN</first_name>
+	<last_name>JANEWSKI</last_name>
+	<phone_number>JANKES</phone_number>
+	<notes>JANO</notes>
+</contact>
+</contacts>
