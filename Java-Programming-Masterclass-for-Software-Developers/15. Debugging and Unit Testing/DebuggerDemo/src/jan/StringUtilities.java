@@ -8,4 +8,13 @@ public class StringUtilities {
         sBuilder.append(c);
         charAdded++;
     }
+
+    public String upperAndPrefix(String str) {
+        String upper = str.toUpperCase();
+        return "Prefix " + upper;
+    }
+
+    public String addSuffix(String str) {
+        return  str + "__Suffix";
+    }
 }
