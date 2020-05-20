@@ -6,6 +6,7 @@ import jan.model.SongArtist;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
 
@@ -52,7 +53,11 @@ public class Main {
 
         datasource.createViewForSongArtist();
 
-        songArtists = datasource.querySongInfoView("She's On Fire");
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter a song title: ");
+        String title = scanner.nextLine();
+
+        songArtists = datasource.querySongInfoView(title);
         if(songArtists.isEmpty()) {
             System.out.println("Could not find the artist for the song");
             return;
@@ -65,5 +70,6 @@ public class Main {
         }
 
         datasource.close();
+
     }
 }

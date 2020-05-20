@@ -1,5 +1,6 @@
 package jan.model;
 
+import javax.naming.ldap.PagedResultsControl;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,11 +83,44 @@ public class Datasource {
     public static final String QUERY_VIEW_SONG_INFO = "SELECT " + COLUMN_ARTIST_NAME + ", " + COLUMN_SONG_ALBUM + ", " + COLUMN_SONG_TRACK +
             " FROM " + TABLE_ARTIST_SONG_VIEW + " WHERE " + COLUMN_SONG_TITLE + " = \"";
 
+    public static final String QUERY_VIEW_SONG_INFO_PREP = "SELECT " + COLUMN_ARTIST_NAME + ", " + COLUMN_SONG_ALBUM + ", " + COLUMN_SONG_TRACK +
+            " FROM " + TABLE_ARTIST_SONG_VIEW + " WHERE " + COLUMN_SONG_TITLE + " = ?";
+
+    public static final String INSERT_ARTIST = "INSERT INTO " + TABLE_ARTISTS +
+            '(' + COLUMN_ARTIST_NAME + ") VALUES(?)";
+
+    public static final String INSERT_ALBUMS = "INSERT INTO " + TABLE_ALBUMS +
+            '(' + COLUMN_ALBUM_NAME + ',' + COLUMN_ALBUM_ARTIST + ") VALUES(?, ?)";
+
+    public static final String INSERT_SONGS = "INSERT INTO " + TABLE_SONGS +
+            '(' + COLUMN_SONG_TRACK + ',' + COLUMN_SONG_TITLE + ',' + COLUMN_SONG_ALBUM + ") VALUES(?, ?, ?)";
+
+    public static final String QUERY_ARTIST = "SELECT " + COLUMN_ARTIST_ID + " FROM " + TABLE_ARTISTS +
+            "WHERE " + COLUMN_ARTIST_NAME + " = ?";
+
+    public static final String QUERY_ALBUM = "SELECT " + COLUMN_ALBUM_ID + " FROM " + TABLE_ALBUMS +
+            "WHERE " + COLUMN_ALBUM_NAME + " = ?";
+
     private Connection conn;
+
+    private PreparedStatement querySongInfoView;
+    private PreparedStatement insertIntoArtist;
+    private PreparedStatement insertIntoAlbums;
+    private PreparedStatement insertIntoSongs;
+
+    private PreparedStatement queryArtist;
+    private PreparedStatement queryAlbum;
 
     public boolean open() {
         try {
             conn = DriverManager.getConnection(CONNECTION_STRING);
+            querySongInfoView = conn.prepareStatement(QUERY_VIEW_SONG_INFO_PREP);
+            insertIntoArtist = conn.prepareStatement(INSERT_ARTIST, Statement.RETURN_GENERATED_KEYS);
+            insertIntoAlbums = conn.prepareStatement(INSERT_ALBUMS, Statement.RETURN_GENERATED_KEYS);
+            insertIntoSongs = conn.prepareStatement(INSERT_SONGS);
+            queryArtist = conn.prepareStatement(QUERY_ARTIST);
+            queryAlbum = conn.prepareStatement(QUERY_ALBUM);
+
             return true;
         } catch (SQLException e) {
             System.out.println("Couldn't connect to database: " + e.getMessage());
@@ -96,6 +130,30 @@ public class Datasource {
 
     public void close() {
         try {
+            if(querySongInfoView != null) {
+                querySongInfoView.close();
+            }
+
+            if(insertIntoArtist != null) {
+                insertIntoArtist.close();
+            }
+
+            if(insertIntoAlbums != null) {
+                insertIntoAlbums.close();
+            }
+
+            if(insertIntoSongs != null) {
+                insertIntoSongs.close();
+            }
+
+            if(queryArtist != null) {
+                queryArtist.close();
+            }
+
+            if(queryAlbum != null) {
+                queryAlbum.close();
+            }
+
             if(conn != null) {
                 conn.close();
             }
@@ -255,14 +313,10 @@ public class Datasource {
     }
 
     public List<SongArtist> querySongInfoView(String title) {
-        StringBuilder sb = new StringBuilder(QUERY_VIEW_SONG_INFO);
-        sb.append(title);
-        sb.append("\"");
 
-        System.out.println(sb.toString());
-
-        try (Statement statement = conn.createStatement();
-        ResultSet results = statement.executeQuery(sb.toString())) {
+        try {
+            querySongInfoView.setString(1, title);
+            ResultSet results = querySongInfoView.executeQuery();
 
             List<SongArtist> songArtists = new ArrayList<>();
             while (results.next()) {
@@ -274,6 +328,7 @@ public class Datasource {
             }
 
             return songArtists;
+
         } catch (SQLException e) {
             System.out.println("Query failed: " + e.getMessage());
             return null;
